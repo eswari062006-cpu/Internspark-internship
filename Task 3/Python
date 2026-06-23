@@ -1,0 +1,50 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+from transformers import pipeline
+
+app = FastAPI(title="Sentiment Analysis API")
+
+classifier = pipeline("sentiment-analysis")
+
+class TextInput(BaseModel):
+    text: str
+
+@app.get("/")
+def home():
+    return {
+        "message": "Sentiment Analysis API is running"
+    }
+
+@app.post("/predict")
+def predict(data: TextInput):
+    result = classifier(data.text)
+
+    return {
+        "input": data.text,
+        "prediction": result[0]["label"],
+        "confidence": round(result[0]["score"], 4)
+    } 
+3rd oneFROM python:3.11
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]curl -X POST "http://127.0.0.1:8000/predict" \
+-H "Content-Type: application/json" \
+-d "{\"text\":\"I love Artificial Intelligence\"}"sentiment-api/
+│
+├── app.py
+├── requirements.txt
+├── Dockerfile
+└── README.md
+pip install -r requirements.txt
+uvicorn app:app --reloadcurl -X POST "http://127.0.0.1:8000/predict" \
+-H "Content-Type: application/json" \
+-d "{\"text\":\"I love Artificial Intelligence\"}"
